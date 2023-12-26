@@ -41,6 +41,11 @@ def receive():
 
         client.send('Nickname'.encode('UTF-8'))
         nickname = client.recv(LENGTH).decode('UTF-8')
+        if nickname in nicknames:
+            client.send('Occupied'.encode('UTF-8'))
+            client.close()
+            continue
+
         nicknames.append(nickname)
         clients.append(client)
 

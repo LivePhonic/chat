@@ -3,6 +3,7 @@ import threading
 
 host = '192.168.1.8'
 port = 10000
+LENGTH = 2000
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -21,7 +22,7 @@ def broadcast(message):
 def processing(client):
     while True:
         try:
-            message = client.recv(1024)
+            message = client.recv(LENGTH)
             broadcast(message)
         except:
             index = clients.index(client)
@@ -39,7 +40,7 @@ def receive():
         print(f"Connected with {address}")
 
         client.send('Nickname'.encode('UTF-8'))
-        nickname = client.recv(1024).decode('UTF-8')
+        nickname = client.recv(LENGTH).decode('UTF-8')
         nicknames.append(nickname)
         clients.append(client)
 

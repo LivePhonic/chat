@@ -3,6 +3,7 @@ import threading
 
 host = '192.168.1.8'
 port = 10000
+LENGTH = 2000
 
 nickname = input("Choose your nickname: ")
 
@@ -12,7 +13,7 @@ client.connect((host, port))
 def receive():
     while True:
         try:
-            message = client.recv(1024).decode('UTF-8')
+            message = client.recv(LENGTH).decode('UTF-8')
             if message == 'Nickname':
                 client.send(nickname.encode('UTF-8'))
             else:

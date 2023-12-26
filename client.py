@@ -12,9 +12,9 @@ client.connect((host, port))
 def receive():
     while True:
         try:
-            message = client.recv(1024).decode('ascii')
+            message = client.recv(1024).decode('UTF-8')
             if message == 'Nickname':
-                client.send(nickname.encode('ascii'))
+                client.send(nickname.encode('UTF-8'))
             else:
                 print(message)
         except:
@@ -25,7 +25,7 @@ def receive():
 def write():
     while True:
         message = '{}: {}'.format(nickname, input(''))
-        client.send(message.encode('ascii'))
+        client.send(message.encode('UTF-8'))
 
 receive_thread = threading.Thread(target=receive)
 receive_thread.start()

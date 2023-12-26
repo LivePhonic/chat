@@ -38,6 +38,8 @@ def receive():
 
 def write():
     while True:
+        if stop_thread:
+            break
         message = '{}: {}'.format(nickname, input(''))
         client.send(message.encode('UTF-8'))
 

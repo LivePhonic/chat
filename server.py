@@ -14,6 +14,7 @@ print(f'Ah shit, here we go again')
 clients = []
 nicknames = []
 
+
 def broadcast(message):
     for client in clients:
         client.send(message)
@@ -33,6 +34,7 @@ def processing(client):
             print(f'{nickname} disconnected')
             nicknames.remove(nickname)
             break
+
 
 def receive():
     while True:
@@ -55,5 +57,6 @@ def receive():
 
         thread = threading.Thread(target=processing, args=(client,))
         thread.start()
+
 
 receive()

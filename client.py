@@ -1,7 +1,7 @@
 import socket
 import threading
 
-host = 'localhost'
+host = '127.0.0.1'
 port = 10000
 LENGTH = 2000
 
@@ -12,6 +12,7 @@ client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect((host, port))
 
 stop_thread = False
+
 
 def receive():
     while True:
@@ -36,12 +37,14 @@ def receive():
             client.close()
             break
 
+
 def write():
     while True:
         if stop_thread:
             break
         message = '{}: {}'.format(nickname, input(''))
         client.send(message.encode('UTF-8'))
+
 
 receive_thread = threading.Thread(target=receive)
 receive_thread.start()

@@ -1,7 +1,7 @@
 import socket
 import threading
 
-host = '127.0.0.1'
+host = 'localhost'
 port = 10000
 LENGTH = 2000
 

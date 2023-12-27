@@ -1,53 +1,59 @@
 import socket
-import threading
+from threading import Thread
 
-host = 'localhost'
-port = 10000
-LENGTH = 2000
+HOST = "localhost"
+PORT = 10000
+separator_token = "<SEP>"
 
-nickname = input("Choose your nickname: ")
+try:
+    client = socket.socket()
+    print(f"Connecting to {HOST}:{PORT}...")
 
-client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client.connect((HOST, PORT))
+    print("Connected.")
+except:
+    print("\nConnection could not be established.")
+    exit(0)
 
-client.connect((host, port))
+try:
+    nickname = input("Choose your nickname: ")
+    print("Welcome to chat! Send 'q' to exit or press 'ctrl+C'.")
+    client.send(f"{nickname} joined!".encode())
+except:
+    print("\nOoops, you lost connection!")
+    exit(0)
 
-stop_thread = False
 
-
-def receive():
+def listen_for_messages():
     while True:
-        global stop_thread
-        if stop_thread:
-            break
         try:
-            message = client.recv(LENGTH).decode('UTF-8')
-            if message == 'Nickname':
-                client.send(nickname.encode('UTF-8'))
-                new_message = client.recv(LENGTH).decode('UTF-8')
-                if new_message == 'Occupied':
-                    print("This nickname is already occupied, reconnect with another one")
-                    stop_thread = True
-                else:
-                    print(new_message)
-
-            else:
-                print(message)
+            message = client.recv(1024).decode()
+            print("\n" + message)
         except:
-            print("Ooops, you lost connection!")
-            client.close()
+            exit(0)
+
+
+t = Thread(target=listen_for_messages)
+
+t.daemon = True
+
+t.start()
+
+
+while True:
+    try:
+        to_send = input()
+        if (to_send.lower() == 'q'):
+            client.send(f"{nickname} left!".encode())
             break
+        to_send = f"{nickname}{separator_token}{to_send}"
 
+        client.send(to_send.encode())
+    except KeyboardInterrupt:
+        client.send(f"{nickname} left!".encode())
+        break
+    except:
+        exit(0)
 
-def write():
-    while True:
-        if stop_thread:
-            break
-        message = '{}: {}'.format(nickname, input(''))
-        client.send(message.encode('UTF-8'))
-
-
-receive_thread = threading.Thread(target=receive)
-receive_thread.start()
-
-write_thread = threading.Thread(target=write)
-write_thread.start()
+print("Ooops, you lost connection!")
+client.close()

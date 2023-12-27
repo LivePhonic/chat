@@ -1,62 +1,53 @@
 import socket
-import threading
+from threading import Thread
 
-host = ''
-port = 10000
-LENGTH = 2000
 
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+HOST = ''
+PORT = 10000
+separator_token = "<SEP>"
+
+clients = set()
+
+server = socket.socket()
+
 server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-server.bind((host, port))
-server.listen()
-print(f'Ah shit, here we go again')
 
-clients = []
-nicknames = []
+server.bind((HOST, PORT))
+
+server.listen(5)
+print("Ah shit, here we go again")
 
 
-def broadcast(message):
+def send_to_chat(message):
     for client in clients:
-        client.send(message)
+        client.send(message.encode())
 
 
-def processing(client):
+def listen_for_client(cs):
     while True:
         try:
-            message = client.recv(LENGTH)
-            broadcast(message)
+            message = cs.recv(1024).decode()
+            if not message:
+                print(f"{address} disconnected.")
+                clients.remove(cs)
+                break
         except:
-            index = clients.index(client)
-            clients.remove(client)
-            client.close()
-            nickname = nicknames[index]
-            broadcast(f'{nickname} left!'.encode('ascii'))
-            print(f'{nickname} disconnected')
-            nicknames.remove(nickname)
+            print(f"{address} disconnected.")
+            clients.remove(cs)
             break
+        else:
+            message = message.replace(separator_token, ": ")
+        send_to_chat(message)
 
 
-def receive():
-    while True:
-        client, address = server.accept()
-        print(f"Connected with {address}")
+while True:
+    client, address = server.accept()
+    print(f"{address} connected.")
 
-        client.send('Nickname'.encode('UTF-8'))
-        nickname = client.recv(LENGTH).decode('UTF-8')
-        if nickname in nicknames:
-            client.send('Occupied'.encode('UTF-8'))
-            client.close()
-            continue
+    clients.add(client)
 
-        nicknames.append(nickname)
-        clients.append(client)
+    t = Thread(target=listen_for_client, args=(client,))
 
-        print(f"Nickname is {nickname}")
-        client.send('Connected to server!'.encode('UTF-8'))
-        broadcast(f"\n{nickname} joined!".encode('UTF-8'))
+    t.daemon = True
 
-        thread = threading.Thread(target=processing, args=(client,))
-        thread.start()
-
-
-receive()
+    t.start()
